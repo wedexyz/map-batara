@@ -139,7 +139,7 @@
   .legend {
     left:15px;
     bottom:15px;
-    width:200px;
+    width:125px;
     background:rgba(255,255,255,0.95);
     border:1px solid #ddd;
     border-radius:8px;
@@ -237,10 +237,10 @@
 <script src="https://unpkg.com/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
 
 <script>
-  const center = [-8.228149, 114.4467151]; // geser sedikit ke kanan
+  const center = [-8.127592, 114.360316]; // geser sedikit ke kanan
     const map = L.map('map', {
       center: center,
-      zoom: 17,
+      zoom: 18,
       zoomControl: true,
       scrollWheelZoom: true
     });
@@ -262,7 +262,7 @@ const bounds = [
 
 var satellite = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}').addTo(map);
  var street = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-    opacity:0.4
+    opacity:0.3
   }).addTo(map);
  var slider = document.getElementById('opacity-slider');
   var val = document.getElementById('opacity-value');
@@ -303,7 +303,9 @@ L.control.scale({
 var ijo         = L.icon({iconUrl: 'ijo.gif',iconSize:[50, 50],});
 var kuning      = L.icon({iconUrl: 'kuning.gif',iconSize:[50, 50],});
 var bibit       = L.icon({iconUrl: 'bibit.gif',iconSize:[50, 50],});
+
 var a           = L.latLng(-8.125968391374883, 114.35439018212486);
+var a0_1        = L.latLng(-8.126145, 114.355449);
 var a1          = L.latLng(-8.129388, 114.351615);
 var b           = L.latLng(-8.12720955629512, 114.35413883148401);
 var c           = L.latLng(-8.128365793648818, 114.35210626932665);
@@ -312,10 +314,13 @@ var m1 = L.marker(a,   {icon: ijo,})
 var m2 = L.marker(a1,   {icon: ijo,})
 var m3 = L.marker(b,   {icon: kuning,})
 var m4 = L.marker(c,   {icon: bibit,})
+var m5 = L.marker(a0_1,   {icon: ijo,})
+
 m1.addTo(map)
 m2.addTo(map)
 m3.addTo(map)
 m4.addTo(map)
+m5.addTo(map)
 
 /* --- Koordinat Kursor --- */
 const coordsDiv = document.getElementById('coords');
