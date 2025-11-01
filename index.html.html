@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peta Penanaman Papring — Kalipuro</title>
+<link rel="shortcut icon" href="logo.PNG" type="image/x-icon">
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<style>
+  html, body {
+    margin:0;
+    padding:0;
+    height:100%;
+    overflow:hidden; /* tidak bisa scroll */
+    font-family:"Segoe UI", Roboto, Arial, sans-serif;
+    background:#f3f5f7;
+  }
+ .info {
+      position: absolute;
+      top: 8px;
+      left: 50px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0);
+      padding: 6px 8px;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      font-size: 14px;
+    }
+  /* Layout utama satu layar penuh */
+  .page {
+    display:flex;
+    flex-direction:column;
+    height:100vh; /* isi penuh 1 layar */
+    background:#fff;
+    box-shadow:0 0 20px rgba(0,0,0,0.1);
+  }
+
+  header {
+    flex:0 0 60px;
+    text-align:center;
+    padding:8px;
+    background:#fff;
+    border-bottom:1px solid #e5e7eb;
+  }
+  header h1 {
+    font-size:18px;
+    margin:0;
+    font-weight:700;
+  }
+  header p {
+    font-size:13px;
+    color:#555;
+    margin:2px 0 0;
+  }
+
+  main {
+    flex:1;
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* Map container full fit screen (tanpa scroll) */
+  #map {
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+  }
+
+  footer {
+    flex:0 0 28px;
+    background:#fff;
+    font-size:12px;
+    color:#666;
+    text-align:center;
+    border-top:1px solid #e5e7eb;
+    line-height:28px;
+  }
+
+  /* Overlay layout di atas peta */
+  .overlay {
+    position:absolute;
+    z-index:1000;
+    
+  }
+
+  /* Kontrol transparansi */
+  .opacity-control {
+    top:15px;
+    left:15px;
+    background:white;
+    padding:8px 10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:13px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  }
+
+  /* Kompas */
+  .north {
+    top:150px;
+    right:5px;
+  
+    height:5px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .north svg {width:36px;height:36px;}
+
+  /* Skala */
+  .scale {
+    top:90px;
+    right:15px;
+    background:rgba(255,255,255,0.95);
+    border:1px solid #ddd;
+    border-radius:6px;
+    padding:8px 12px;
+    font-size:12px;
+    text-align:center;
+    width:150px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+  }
+  .bar {
+    height:8px;
+    width:100%;
+    background:linear-gradient(90deg,#111 0,#111 20%,#fff 20%,#fff 40%,#111 40%,#111 60%,#fff 60%,#fff 80%,#111 80%);
+    border-radius:2px;
+    margin-bottom:4px;
+  }
+  .scale-text {font-size:12px;color:#555;margin-top:2px;}
+
+  /* Legenda */
+  .legend {
+    left:15px;
+    bottom:15px;
+    width:200px;
+    background:rgba(255,255,255,0.95);
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:12px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+  }
+  .legend h3 {margin:0 0 4px 0;font-size:13px;text-align:center;}
+  .item {
+    display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px dashed #ccc;
+  }
+  .item:last-child{border-bottom:0;}
+  .swatch {
+    width:28px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;color:#fff;
+  }
+  .swatch.bk {background:#f2c94c;color:#000;}
+  .swatch.bp {background:#f2994a;}
+  .swatch.green {background:#2f855a;}
+  .meta {font-size:11px;color:#666;}
+
+  /* Mini Map */
+  .mini-map {
+    bottom:15px;
+    right:15px;
+    width:200px;
+    height:130px;
+    background:rgba(255,255,255,0.9);
+    border:1px solid #888;
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .mini-map::before {
+    content:'';
+    position:absolute;
+    inset:0;
+    background:#d7e0ee url('mini-map-placeholder.png') center/cover no-repeat;
+    opacity:0.6;
+  }
+  .mini-map-label {
+    position:absolute;
+    bottom:4px;
+    width:100%;
+    text-align:center;
+    font-size:11px;
+    color:#111;
+    background:rgba(255,255,255,0.7);
+    font-weight:600;
+  }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    
+    <img src="logo.PNG" height="50" alt="" srcset="">
+    <!-- Overlay UI -->
+     
+
+  
+  </header>
+  <div class="north overlay">
+    <img src="arah.PNG" alt="" srcset="">
+    </div>
+  <main>
+    <!-- Peta -->
+    <div id="map"></div>
+
+    <div class="info" id="coords">Koordinat: —</div>
+
+ 
+      
+    <div class="legend overlay">
+    
+       <div class="item"><div ><img src="bibit.gif" width="20" alt=""></div><div><b>Bibit</b><br><span class="meta">345 bibit</span></div></div>
+      <div class="item"><div ><img src="kuning.gif" width="20" alt=""></div><div><b>Bambu Kuning</b><br><span class="meta">300 bibit</span></div></div>
+      <div class="item"><div ><img src="ijo.gif" width="20" alt=""></div><div><b>Bambu Petung</b><br><span class="meta">345 bibit</span></div></div>
+      <div class="item"><div ><img src="sungai.png" width="20" alt=""></div><div><b>Sungai</b><br><span class="meta">Kanal / Sungai terdekat</span></div></div>
+     <label for="opacity-slider">Transparansi Street Map:</label>
+      <input type="range" id="opacity-slider" min="0" max="1" step="0.1" value="0.5">
+      <span id="opacity-value">0.5</span>
+    </div>
+
+  
+  </main>
+
+  <footer>
+    © Peta Penanaman Papring — Kalipuro, Banyuwangi
+  </footer>
+</div>
+
+<!-- ===== Leaflet Script ===== -->
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<!-- Leaflet MiniMap plugin -->
+<script src="https://unpkg.com/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
+
+<script>
+/* --- Parameter dari URL OSM --- */
+const center = [ -8.128145, 114.356711];   // lat, lon pusat
+
+
+var map = L.map('map', { zoomControl:false }).setView(center, 18);
+// BBOX dari URL: minlon, minlat, maxlon, maxlat
+const bbox = [114.32312965393068, -8.137873722125033, 114.3710231781006, -8.11442231027425];
+// Leaflet expects bounds as [[southWestLat, southWestLng], [northEastLat, northEastLng]]
+const bounds = [
+  [bbox[1], bbox[0]], // SW
+  [bbox[3], bbox[2]]  // NE
+];
+
+
+
+
+
+
+
+var satellite = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}').addTo(map);
+ var street = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+    opacity:0.4
+  }).addTo(map);
+ var slider = document.getElementById('opacity-slider');
+  var val = document.getElementById('opacity-value');
+  slider.addEventListener('input', function(){
+    street.setOpacity(this.value);
+    val.textContent = this.value;
+  });
+
+
+
+
+/* --- MiniMap --- */
+const miniLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+  attribution: '&copy; Google'
+});
+
+const miniMap = new L.Control.MiniMap(miniLayer, {
+  toggleDisplay: true,         // tombol show/hide
+  minimized: false,            // tampil default
+  width: 150,
+  height: 150,
+  zoomLevelOffset: -4,         // lebih kecil dari peta utama
+  aimingRectOptions: {color: "#ff3333", weight: 1, opacity: 0.8},
+  shadowRectOptions: {color: "#000", weight: 1, opacity: 0, fillOpacity: 0}
+}).addTo(map);
+
+
+/* --- Skala --- */
+L.control.scale({imperial: false}).addTo(map);
+
+
+
+
+
+var ijo         = L.icon({iconUrl: 'ijo.gif',iconSize:[50, 50],});
+var kuning      = L.icon({iconUrl: 'kuning.gif',iconSize:[50, 50],});
+var bibit       = L.icon({iconUrl: 'bibit.gif',iconSize:[50, 50],});
+var a           = L.latLng(-8.125968391374883, 114.35439018212486);
+var a1          = L.latLng(-8.129388, 114.351615);
+var b           = L.latLng(-8.12720955629512, 114.35413883148401);
+var c           = L.latLng(-8.128365793648818, 114.35210626932665);
+
+var m1 = L.marker(a,   {icon: ijo,})
+var m2 = L.marker(a1,   {icon: ijo,})
+var m3 = L.marker(b,   {icon: kuning,})
+var m4 = L.marker(c,   {icon: bibit,})
+m1.addTo(map)
+m2.addTo(map)
+m3.addTo(map)
+m4.addTo(map)
+
+/* --- Koordinat Kursor --- */
+const coordsDiv = document.getElementById('coords');
+map.on('mousemove', e => {
+  coordsDiv.textContent = `Koordinat: ${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+});
+
+/* --- Fit ke bounds --- */
+map.fitBounds(bounds, {padding: [20,20]});
+
+/* --- Polygon Batas (BBox) --- */
+const bboxRect = L.rectangle(bounds, { color: "#ff7800", weight: 1, fill: false }).addTo(map);
+</script>
+</body>
+</html>
