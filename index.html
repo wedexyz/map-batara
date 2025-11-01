@@ -39,7 +39,7 @@
   }
 
   header {
-    flex:0 0 60px;
+
     text-align:center;
     padding:8px;
     background:#fff;
@@ -194,7 +194,7 @@
 <div class="page">
   <header>
     
-    <img src="logo.PNG" height="50" alt="" srcset="">
+    <img src="logo.PNG" width="100%"  alt="" srcset="">
     <!-- Overlay UI -->
      
 
@@ -237,13 +237,17 @@
 <script src="https://unpkg.com/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
 
 <script>
-/* --- Parameter dari URL OSM --- */
-const center = [ -8.128145, 114.356711];   // lat, lon pusat
-
-
-var map = L.map('map', { zoomControl:false }).setView(center, 18);
+  const center = [-8.228149, 114.4467151]; // geser sedikit ke kanan
+    const map = L.map('map', {
+      center: center,
+      zoom: 17,
+      zoomControl: true,
+      scrollWheelZoom: true
+    });
 // BBOX dari URL: minlon, minlat, maxlon, maxlat
-const bbox = [114.32312965393068, -8.137873722125033, 114.3710231781006, -8.11442231027425];
+const bbox = [114.32312965393068 + 0.02, -8.137873722125033, 114.3710231781006 + 0.03, -8.11442231027425];
+
+
 // Leaflet expects bounds as [[southWestLat, southWestLng], [northEastLat, northEastLng]]
 const bounds = [
   [bbox[1], bbox[0]], // SW
@@ -287,9 +291,12 @@ const miniMap = new L.Control.MiniMap(miniLayer, {
 
 
 /* --- Skala --- */
-L.control.scale({imperial: false}).addTo(map);
 
-
+L.control.scale({
+  imperial: false,   // hanya satuan meter/kilometer
+  maxWidth: 150,     // panjang maksimum bar skala
+  position: 'bottomright' // posisi: 'topleft', 'topright', 'bottomleft', 'bottomright'
+}).addTo(map);
 
 
 
