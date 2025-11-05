@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Peta Penanaman Papring — Kalipuro</title>
+<link rel="shortcut icon" href="logo.PNG" type="image/x-icon">
+<!-- Leaflet -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-rotate@0.1.4/dist/leaflet-rotate.js"></script>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+/* Create two equal columns that floats next to each other */
+.column {
+  float: left;
+  width: 48%;
+  padding: 5px;
+  background-color: #00000000;
+}
+
+/* Clear floats after the columns */
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+</style>
+
+
+
+<style>
+    .topnav {
+  overflow: hidden;
+  background-color: #33333300;
+}
+
+.topnav a {
+  float: left;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.topnav a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.topnav a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+ .topnav-right {
+  float: right;
+}
+.warnap {
+  color :yellow;
+}
+</style>
+<style>
+.sidebar {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  right: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+
+.sidebar a {
+  padding: 8px 8px 8px 32px;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+}
+
+.sidebar a:hover {
+  color: #f1f1f1;
+}
+
+.sidebar .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+  margin-left: 50px;
+}
+
+.openbtn {
+  font-size: 20px;
+  cursor: pointer;
+  background-color: #111;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+}
+
+.openbtn:hover {
+  background-color: #444;
+}
+
+#main {
+  transition: margin-left .5s;
+  padding: 16px;
+}
+
+/* On smaller screens, where height is less than 450px, change the style of the sidenav (less padding and a smaller font size) */
+@media screen and (max-height: 450px) {
+  .sidebar {padding-top: 15px;}
+  .sidebar a {font-size: 18px;}
+}
+</style>
+
+<style>
+  html, body {
+    margin:0;
+    padding:0;
+    height:100%;
+    overflow:hidden; /* tidak bisa scroll */
+    font-family:"Segoe UI", Roboto, Arial, sans-serif;
+    background:#f3f5f7;
+  }
+ .info {
+      position: absolute;
+      top: 8px;
+      left: 50px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0);
+      padding: 6px 8px;
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      font-size: 14px;
+    }
+  /* Layout utama satu layar penuh */
+  .page {
+    display:flex;
+    flex-direction:column;
+    height:95vh; /* isi penuh 1 layar */
+    background:#fff;
+    box-shadow:0 0 20px rgba(0,0,0,0.1);
+  }
+
+  header {
+
+    text-align:center;
+    padding:8px;
+    background:#fff;
+    border-bottom:1px solid #e5e7eb;
+  }
+  header h1 {
+    font-size:18px;
+    margin:0;
+    font-weight:700;
+  }
+  header p {
+    font-size:13px;
+    color:#555;
+    margin:2px 0 0;
+  }
+
+  main {
+    flex:1;
+    position:relative;
+    overflow:hidden;
+  }
+
+  /* Map container full fit screen (tanpa scroll) */
+  #map {
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+  }
+
+  footer {
+    flex:0 0 28px;
+    background:#fff;
+    font-size:12px;
+    color:#666;
+    text-align:center;
+    border-top:1px solid #e5e7eb;
+    line-height:28px;
+  }
+
+  /* Overlay layout di atas peta */
+  .overlay {
+    position:absolute;
+    z-index:1000;
+    
+  }
+
+  /* Kontrol transparansi */
+  .opacity-control {
+    top:15px;
+    left:15px;
+    background:white;
+    padding:8px 10px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:13px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+  }
+
+  /* Kompas */
+  .north {
+    top:195px;
+    left:15px;
+    height:5px;
+    border-radius:8px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  
+
+  /* Skala */
+  .scale {
+    top:90px;
+    right:15px;
+    background:rgba(255,255,255,0.95);
+    border:1px solid #ddd;
+    border-radius:6px;
+    padding:8px 12px;
+    font-size:12px;
+    text-align:center;
+    width:150px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+  }
+  .bar {
+    height:8px;
+    width:100%;
+    background:linear-gradient(90deg,#111 0,#111 20%,#fff 20%,#fff 40%,#111 40%,#111 60%,#fff 60%,#fff 80%,#111 80%);
+    border-radius:2px;
+    margin-bottom:4px;
+  }
+  .scale-text {font-size:12px;color:#555;margin-top:2px;}
+
+  /* Legenda */
+  .legend {
+    left:15px;
+    bottom:15px;
+    width:150px;
+    background:rgba(255,255,255,0.95);
+    border:1px solid #ddd;
+    border-radius:8px;
+    padding:8px 10px;
+    font-size:12px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.05);
+  }
+  .legend h3 {margin:0 0 4px 0;font-size:13px;text-align:center;}
+  .item {
+    display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px dashed #ccc;
+  }
+  .item:last-child{border-bottom:0;}
+  .swatch {
+    width:28px;height:20px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:11px;color:#fff;
+  }
+  .swatch.bk {background:#f2c94c;color:#000;}
+  .swatch.bp {background:#f2994a;}
+  .swatch.green {background:#2f855a;}
+  .meta {font-size:11px;color:#666;}
+
+  /* Mini Map */
+  .mini-map {
+    bottom:15px;
+    right:15px;
+    width:200px;
+    height:130px;
+    background:rgba(255,255,255,0.9);
+    border:1px solid #888;
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .mini-map::before {
+    content:'';
+    position:absolute;
+    inset:0;
+    background:#d7e0ee url('mini-map-placeholder.png') center/cover no-repeat;
+    opacity:0.6;
+  }
+  .mini-map-label {
+    position:absolute;
+    bottom:4px;
+    width:100%;
+    text-align:center;
+    font-size:11px;
+    color:#111;
+    background:rgba(255,255,255,0.7);
+    font-weight:600;
+  }
+  #compass-svg {
+    width: 20%;
+      height: 100%;
+    }
+    #compass-arrow {
+            transition: transform 0.3s ease;
+        }
+</style>
+
+</head>
+<body> 
+    
+    
+    
+    <!-- Overlay UI -->
+<div id="mySidebar" class="sidebar">
+<a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+
+<div style="background-color: #043eaa;margin-left: 20px;">
+  <a href="index.html">Kembali</a>
+</div>
+
+<div class="row" style="margin-left: 20px;">
+  <div class="column" >
+    
+   <img src="img\IMG-20251103-WA0030.jpg" width="100%" height="187" alt="">
+  </div>
+  <div class="column">
+ 
+  <iframe width="650" height="187"  src="https://embed.windy.com/embed.html?type=forecast&location=coordinates&detail=true&detailLat=37.751&detailLon=-97.822&metricTemp=default&metricRain=default&metricWind=default" frameborder="0"></iframe>
+
+
+  </div>
+  
+</div>
+
+
+
+
+</div>
+
+<div class="page">
+
+<header>
+      
+<div class="topnav">
+<img src="logo.PNG" width="70%"   alt="" srcset="">
+  <div class="topnav-right">
+   <button class="openbtn" onclick="openNav()">☰  </button>
+  </div>
+</div>
+
+  
+  </header>
+  <div class="north overlay">
+     <div id="compass-icon">
+      
+        <svg id="compass-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <!-- Lingkaran kompas -->
+            <circle cx="50" cy="50" r="45" stroke="black" stroke-width="2" fill="none"/>
+            <!-- Label arah kardinal -->
+            <text x="50" y="15" text-anchor="middle" font-size="12" fill="black">N</text>
+            <text x="85" y="55" text-anchor="middle" font-size="12" fill="black">E</text>
+            <text x="50" y="95" text-anchor="middle" font-size="12" fill="black">S</text>
+            <text x="15" y="55" text-anchor="middle" font-size="12" fill="black">W</text>
+            <!-- Panah kompas (berputar) -->
+            <g id="compass-arrow">
+                <path d="M50 20 L55 40 L50 35 L45 40 Z" fill="red"/>
+                <line x1="50" y1="35" x2="50" y2="70" stroke="red" stroke-width="2"/>
+            </g>
+         
+        </svg>
+             
+    </div>
+ 
+
+    </div>
+  <main>
+    <!-- Peta -->
+    <div id="map"></div>
+
+
+
+ 
+      
+    <div class="legend overlay">
+     <p id="coords"></p>
+       <div class="item"><div ><img src="bibit.gif" width="20" alt=""></div><div><b>Bibit</b><br><span class="meta">345 bibit</span></div></div>
+      <div class="item"><div ><img src="kuning.gif" width="20" alt=""></div><div><b>Bambu Kuning</b><br><span class="meta">300 bibit</span></div></div>
+      <div class="item"><div ><img src="ijo.gif" width="20" alt=""></div><div><b>Bambu Petung</b><br><span class="meta">345 bibit</span></div></div>
+      <div class="item"><div ><img src="sungai.png" width="20" alt=""></div><div><b>Sungai</b><br><span class="meta">Kanal / Sungai terdekat</span></div></div>
+     <label for="opacity-slider">Transparansi  Map:</label>
+      <input type="range" id="opacity-slider" min="0" max="1" step="0.1" value="0.5">
+      <span id="opacity-value">0.5</span>
+  
+    </div>
+
+  
+  </main>
+
+  <footer>
+    © Peta Penanaman Papring — Kalipuro, Banyuwangi
+  </footer>
+</div>
+
+<!-- ===== Leaflet Script ===== -->
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<!-- Leaflet MiniMap plugin -->
+<script src="https://unpkg.com/leaflet-minimap/dist/Control.MiniMap.min.js"></script>
+<script src="https://unpkg.com/leaflet-rotate@0.1.4/dist/leaflet-rotate.js"></script>
+ <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        // Konfigurasi Firebase (ganti dengan config Anda dari Firebase Console)
+    const firebaseConfig = {
+    apiKey: "AIzaSyAzW3cXMUwfJPzuf039qjZOnHZA7B6FpFw",
+    authDomain: "mapbatara.firebaseapp.com",
+    databaseURL: "https://mapbatara-default-rtdb.firebaseio.com",
+    projectId: "mapbatara",
+    storageBucket: "mapbatara.firebasestorage.app",
+    messagingSenderId: "255699487405",
+    appId: "1:255699487405:web:35cfda7184c2a38c74d424",
+    measurementId: "G-1QYV6R9HFY"
+        };
+
+        // Inisialisasi Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Variabel global untuk peta dan marker
+        let map;
+        let markers = [];
+
+        // Fungsi untuk inisialisasi peta
+        function initMap() {
+              const center = [-8.127592, 114.360316]; // geser sedikit ke kanan
+                map = L.map('map', {
+                center: center,
+                zoom: 17,
+                zoomControl: false,
+                scrollWheelZoom: true,
+                rotate: true,  // Aktifkan rotasi
+                rotateControl: {
+                closeOnZeroBearing: false  // Jaga kontrol kompas tetap terlihat
+            }
+                });
+
+            
+            var satellite = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}').addTo(map);
+            var street = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                opacity:0.3
+            }).addTo(map);
+            var slider = document.getElementById('opacity-slider');
+            var val = document.getElementById('opacity-value');
+            slider.addEventListener('input', function(){
+                street.setOpacity(this.value);
+                val.textContent = this.value;
+            });
+
+                 /* --- Koordinat Kursor --- */
+var coordsDiv = document.getElementById('coords');
+map.on('mousemove', e => {
+  coordsDiv.textContent = `Koordinat: ${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`;
+});
+            /* --- MiniMap --- */
+            const miniLayer = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            attribution: '&copy; Google'
+            });
+            const miniMap = new L.Control.MiniMap(miniLayer, {
+                toggleDisplay: true,         // tombol show/hide
+                minimized: false,            // tampil default
+           
+                width: 150,
+                height: 150,
+                zoomLevelOffset: -4,         // lebih kecil dari peta utama
+                aimingRectOptions: {color: "#ff3333", weight: 1, opacity: 0.8},
+                shadowRectOptions: {color: "#000", weight: 1, opacity: 0, fillOpacity: 0}
+                }).addTo(map);
+        
+            L.control.scale({
+            imperial: false,   // hanya satuan meter/kilometer
+            maxWidth: 150,     // panjang maksimum bar skala
+            position: 'topleft' // posisi: 'topleft', 'topright', 'bottomleft', 'bottomright'
+            }).addTo(map);
+
+            L.control.rotate({
+            position: 'topright'
+             }).addTo(map);
+          
+             // Update rotasi panah kompas saat peta berputar
+          map.on('rotate', function(e) {
+              const bearing = e.target.getBearing();
+              document.getElementById('compass-arrow').style.transform = `rotate(${bearing}deg)`;
+          });
+          // Set awal (panah menunjuk utara)
+          document.getElementById('compass-arrow').style.transform = `rotate(0deg)`;
+         
+              loadMarkers();
+          }
+      
+
+        // Fungsi untuk load marker dari Firebase
+        function loadMarkers() {
+            onValue(ref(database, 'markers'), (snapshot) => {
+                // Hapus marker lama dari peta
+                markers.forEach(marker => map.removeLayer(marker));
+                markers = [];
+                var ijo         = L.icon({iconUrl: 'ijo.gif',iconSize:[50, 50],});
+                var kuning      = L.icon({iconUrl: 'kuning.gif',iconSize:[50, 50],});
+                var bibit       = L.icon({iconUrl: 'bibit.gif',iconSize:[50, 50],});
+                
+                // Tambahkan marker baru dari data Firebase
+                snapshot.forEach((childSnapshot) => {
+                    const data = childSnapshot.val();
+                    
+                    if (data.description == '1'){
+                    const marker = L.marker([data.lat, data.lng] ,{icon: ijo}).addTo(map).bindPopup(data.description);
+                    markers.push(marker);
+                    }
+                    if (data.description == '2'){
+                    const marker = L.marker([data.lat, data.lng] ,{icon: kuning}).addTo(map).bindPopup(data.lat, data.lng);
+                    markers.push(marker);
+                    }
+                      if (data.description == '3'){
+                    const marker = L.marker([data.lat, data.lng] ,{icon: bibit}).addTo(map).bindPopup(data.description);
+                    markers.push(marker);
+                    }
+                });
+            });
+        }
+
+        // Jalankan inisialisasi saat DOM siap
+        document.addEventListener('DOMContentLoaded', initMap);
+    </script>
+
+<script>
+function openNav() {
+  document.getElementById("mySidebar").style.width = "50%";
+  document.getElementById("main").style.marginLeft = "50%";
+}
+
+function closeNav() {
+  document.getElementById("mySidebar").style.width = "0";
+  document.getElementById("main").style.marginLeft= "0";
+}
+</script>
+</body>
+</html>
